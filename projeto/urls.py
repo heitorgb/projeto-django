@@ -15,6 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 # HTTP REQUEST <- HTTP RESPONSE - cliente pede servidor responde
 
@@ -28,3 +30,6 @@ urlpatterns = [
     # path recebe um rota e uma função que está dentro de um app
     # a função path chamou minha view e passou um argumento "request"
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# usamos esse comando para acessar as imagens que fizemos o upload
