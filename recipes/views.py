@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_list_or_404
+from django.shortcuts import render, get_list_or_404, get_object_or_404
 from utils.recipes.factory import make_recipe
 from recipes.models import Recipe, Category
 # Create your views here.
@@ -27,12 +27,10 @@ def category(request, category_id):
 
 
 def recipe(request, id):
-    recipe = Recipe.objects.filter(
-        pk=id,  # buscando pela primary key
-        is_published=True
-    ).order_by('-id').first()  # buscando apenas por um ID
+    # buscando apenas por um ID
+    recipe = get_object_or_404(Recipe, pk=id, is_published=True)
+
     return render(request, 'recipes/pages/recipe-view.html', context={
         'recipe': recipe,
-        # caso for true lá na view n irá mostrar algum conteudo que configurar da página
         'is_detail_page': True,
     })
