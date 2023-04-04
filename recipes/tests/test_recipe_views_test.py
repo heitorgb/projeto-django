@@ -37,6 +37,19 @@ class RecipeViewsTest(RecipeTestBase):
         self.assertIn('Recipe title', content)
         self.assertEqual(len(response_context_recipes), 1)
 
+    def test_recipe_home_template_do_load_recipes_is_not_published(self):
+        """Test recipe is published false dot show"""
+        # criando uma receita para teste
+
+        self.make_recipe(is_published=False)
+
+        response = self.client.get(reverse('recipes:home'))
+
+        self.assertIn(
+            'No Recipes found here',
+            response.content.decode('utf-8')
+        )
+
     def test_recipe_category_view_function_is_corretct(self):
         view = resolve(reverse('recipes:category', kwargs={'category_id': 1}))
         self.assertIs(view.func, views.category)
@@ -56,6 +69,17 @@ class RecipeViewsTest(RecipeTestBase):
 
         # checando se um receita existe
         self.assertIn(needed_title, content)
+
+    def test_recipe_category_template_do_load_recipes_not_published(self):
+        """Test recipe is published false dot show"""
+        # criando uma receita para teste
+
+        recipe = self.make_recipe(is_published=False)
+
+        response = self.client.get(
+            reverse('recipes:recipe', kwargs={'id': recipe.category.id}))
+
+        self.assertEqual(response.status_code, 404)
 
     def test_recipe_detail_view_function_is_corretct(self):
         view = resolve(reverse('recipes:recipe', kwargs={'id': 1}))
@@ -83,3 +107,34 @@ class RecipeViewsTest(RecipeTestBase):
 
         # checando se a page detail existe
         self.assertIn(needed_title, content)
+
+    def test_recipe_detail_template_do_load_recipes_not_published(self):
+        """Test recipe is published false dot show"""
+        # criando uma receita para teste
+
+        recipe = self.make_recipe(is_published=False)
+
+        response = self.client.get(
+            reverse('recipes:recipe', kwargs={'id': recipe.id}))
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_recipe_search_uses_correct_view_function(self):
+        resolved = resolve(reverse('recipes:search'))
+        self.assertIs(resolved.func, views.search)
+
+    def test_recipe_search_return_correct_template(self):
+        response = self.client.get(reverse('recipes:search') + '?q=teste')
+        self.assertTemplateUsed(response, 'recipes/pages/search.html')
+
+    def test_recipe_search_raises_404_if_no_search_term(self):
+        response = self.client.get(reverse('recipes:search'))
+        self.assertEqual(response.status_code, 404)
+
+    def test_recipe_search_term_is_on_page_title_and_escaped(self):
+        url = reverse('recipes:search') + '?q=<teste>'
+        response = self.client.get(url)
+        self.assertIn(
+            'Search for &quot;&lt;teste&gt;&quot;',
+            response.content.decode('utf-8')
+        )
